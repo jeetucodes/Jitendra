@@ -1,0 +1,540 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Anton&family=DM+Mono:wght@300;400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 240 5% 64.9%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: clip;
+    -webkit-overflow-scrolling: touch;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: 'Outfit', sans-serif;
+    @apply font-bold uppercase tracking-tight;
+    line-height: 1.1;
+  }
+
+  p {
+    @apply leading-relaxed;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .font-anton { font-family: 'Anton', sans-serif; }
+  .font-mono { font-family: 'DM Mono', monospace; }
+}
+
+@layer components {
+  .text-shadow-glow {
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  }
+
+  .parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Custom scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent rounded-full;
+  }
+
+  /* Custom cursor styles */
+  .cursor-dot {
+    @apply fixed w-4 h-4 rounded-full bg-accent pointer-events-none z-50 mix-blend-difference;
+    transition: transform 0.15s ease;
+  }
+
+  /* Kinetic Text Reveal */
+  .kinetic-text-wrap {
+    @apply relative overflow-hidden inline-block;
+  }
+
+  .kinetic-text {
+    @apply block;
+    transform: translateY(105%) rotate(10deg);
+    transform-origin: left top;
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+  }
+
+  .kinetic-text.visible {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  /* Text Skew on Scroll Utility */
+  .scroll-skew {
+    will-change: transform;
+    transition: transform 0.1s linear;
+  }
+
+  /* 3D Image Effect */
+  .image-3d-container {
+    @apply relative perspective-1000 transform-style-preserve-3d;
+  }
+
+  .image-3d {
+    @apply w-full h-full transition-transform duration-200;
+  }
+
+  /* Horizontal scrolling section */
+  .horizontal-scroll-section {
+    @apply flex whitespace-nowrap overflow-x-auto scrollbar-hide;
+  }
+
+  /* Code block styling */
+  .code-block {
+    @apply font-mono text-sm bg-secondary/50 p-4 rounded-md overflow-x-auto;
+  }
+
+  /* Matrix effect */
+  .matrix-bg {
+    @apply relative overflow-hidden;
+  }
+
+  .matrix-character {
+    @apply absolute text-accent/80 font-mono text-opacity-80;
+    animation: matrix-fall linear infinite;
+  }
+
+  .glow-text {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.4);
+  }
+
+  .tech-border {
+    @apply border border-accent/30 rounded-md p-0.5 backdrop-blur-sm;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    background-size: 200% 100%;
+    animation: border-glow 3s linear infinite;
+  }
+
+  .glass-card {
+    @apply bg-secondary/30 backdrop-blur-md border border-accent/20 shadow-lg shadow-accent/5;
+  }
+
+  .pill-tag {
+    @apply px-3 py-1 rounded-full text-xs font-mono bg-accent/20 border border-accent/30 text-accent;
+  }
+
+  .nav-link {
+    @apply relative px-3 py-2 font-mono text-sm tracking-wider;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute left-0 bottom-0 w-0 h-0.5 bg-accent transition-all duration-300;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+}
+
+/* Utility classes */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar styling */
+/* Native smooth scrolling is handled by Lenis now */
+html {
+  scroll-behavior: auto !important;
+}
+
+/* Scroll animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Matrix animation */
+@keyframes matrix-fall {
+  0% {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(1000%);
+    opacity: 0;
+  }
+}
+
+@keyframes border-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Code typing animation */
+@keyframes typing {
+  from {
+    width: 0
+  }
+
+  to {
+    width: 100%
+  }
+}
+
+.typewriter {
+  overflow: hidden;
+  border-right: 0.15em solid var(--accent);
+  white-space: nowrap;
+  margin: 0 auto;
+  letter-spacing: 0.15em;
+  animation:
+    typing 3.5s steps(40, end),
+    blink-caret 0.75s step-end infinite;
+}
+
+@keyframes blink-caret {
+
+  from,
+  to {
+    border-color: transparent
+  }
+
+  50% {
+    border-color: rgba(59, 130, 246, 1);
+  }
+}
+
+.gradient-bg {
+  background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+}
+
+/* Button hover effects */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent);
+  transform: translateX(-100%);
+  transition: none;
+}
+
+.btn-shine:hover::after {
+  transform: translateX(100%);
+  transition: transform 0.5s linear;
+}
+
+/* Shimmer text effect */
+@keyframes shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg,
+      rgba(59, 130, 246, 0.7) 0%,
+      rgba(255, 255, 255, 0.9) 50%,
+      rgba(59, 130, 246, 0.7) 100%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ============================================================
+   LOADER — Modern Minimal  (ldr-*)
+   ============================================================ */
+
+/* Root overlay */
+.ldr-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #07090f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  will-change: opacity, transform;
+  transition: opacity 0.55s cubic-bezier(0.4, 0, 1, 1),
+              transform 0.55s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.ldr-exit {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+
+/* Dot-grid background */
+.ldr-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+/* Ambient color blob — changes with platform */
+.ldr-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: background 0.5s ease;
+}
+
+/* ── Card ── */
+.ldr-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 260px;
+}
+
+/* Icon area */
+.ldr-icon-area {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* SVG ring behind icon */
+.ldr-ring {
+  position: absolute;
+  inset: 0;
+}
+
+.ldr-ring-svg {
+  width: 100%;
+  height: 100%;
+  will-change: contents;
+}
+
+/* Icon */
+.ldr-icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: opacity, transform;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.ldr-icon-in {
+  opacity: 1;
+  transform: scale(1) translateY(0px);
+}
+
+.ldr-icon-out {
+  opacity: 0;
+  transform: scale(0.82) translateY(6px);
+}
+
+/* Platform name */
+.ldr-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  will-change: opacity, transform;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.ldr-name-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ldr-name-out {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* Tagline */
+.ldr-tagline {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.22);
+  letter-spacing: 0.04em;
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+/* Progress bar track */
+.ldr-bar-track {
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.ldr-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.08s linear, background 0.4s ease, box-shadow 0.4s ease;
+  will-change: width;
+}
+
+/* Percent */
+.ldr-percent-row {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.ldr-percent-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -2px;
+  transition: color 0.4s ease;
+  will-change: contents;
+}
+
+.ldr-percent-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Platform indicator dots */
+.ldr-dots {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ldr-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.ldr-dot-active {
+  transform: scale(1.4);
+}
