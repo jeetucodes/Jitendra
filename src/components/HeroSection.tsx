@@ -1,44 +1,177 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
-  Sparkles, 
-  ArrowUpRight, 
   ArrowDown, 
-  Terminal, 
-  Copy, 
-  Check, 
-  Code2, 
+  ArrowUpRight, 
+  Sparkles, 
+  Smartphone, 
+  Globe, 
   Cpu, 
   Zap, 
   Github, 
-  Mail,
+  Mail, 
+  Code2,
+  Terminal,
   Layers
 } from 'lucide-react';
-import { toast } from 'sonner';
+import heroBg from '@/img/kigo-hero-bg.jpg';
 
 interface HeroSectionProps {
   startAnim?: boolean;
 }
 
+interface Petal {
+  x: number;
+  y: number;
+  size: number;
+  speedY: number;
+  speedX: number;
+  rotation: number;
+  rotSpeed: number;
+  swing: number;
+  swingSpeed: number;
+  swingAngle: number;
+  opacity: number;
+  layer: 'bg' | 'fg';
+}
+
 export default function HeroSection({ startAnim = true }: HeroSectionProps) {
-  const [copied, setCopied] = useState(false);
-  const [activeCodeTab, setActiveCodeTab] = useState<'profile' | 'capabilities'>('profile');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animFrameRef = useRef<number>();
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  const profileData = {
-    developer: "Jitendra Yadav",
-    title: "Full-Stack & Mobile Engineer",
-    location: "India",
-    availability: "Immediate / High-Impact Roles",
-    coreStack: ["React", "Expo", "Flutter", "Python", "Node.js"],
-    databases: ["Firebase", "Supabase", "PostgreSQL"],
-    focus: "Crafting scalable products with visceral UI & solid systems."
-  };
+  // Kinetic rotating word index (Kigo Studio style headline)
+  const phrases = [
+    { prefix: "Make your", highlight: "web fluid.", color: "from-rose-400 via-red-400 to-amber-300" },
+    { prefix: "Make your", highlight: "mobile app iconic.", color: "from-emerald-300 via-teal-400 to-cyan-400" },
+    { prefix: "Make your", highlight: "architecture scalable.", color: "from-blue-400 via-indigo-400 to-violet-400" },
+    { prefix: "Make your", highlight: "workflows automated.", color: "from-amber-300 via-orange-400 to-rose-400" }
+  ];
+  const [activePhraseIdx, setActivePhraseIdx] = useState(0);
 
-  const handleCopyProfile = () => {
-    navigator.clipboard.writeText(JSON.stringify(profileData, null, 2));
-    setCopied(true);
-    toast.success("Developer profile copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
-  };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActivePhraseIdx((prev) => (prev + 1) % phrases.length);
+    }, 2800);
+    return () => clearInterval(timer);
+  }, [phrases.length]);
+
+  // Sakura Petals Floating Canvas with Wind Physics
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const numPetals = 42;
+    const petals: Petal[] = [];
+
+    for (let i = 0; i < numPetals; i++) {
+      petals.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 9 + 8,
+        speedY: Math.random() * 0.9 + 0.6,
+        speedX: Math.random() * 0.7 + 0.3,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.025,
+        swing: Math.random() * 1.5 + 0.5,
+        swingSpeed: Math.random() * 0.02 + 0.01,
+        swingAngle: Math.random() * Math.PI * 2,
+        opacity: Math.random() * 0.55 + 0.35,
+        layer: Math.random() > 0.4 ? 'fg' : 'bg'
+      });
+    }
+
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const normX = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+      const normY = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+      setMousePos({ x: normX, y: normY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+
+    // Draw single organic sakura petal
+    const drawPetal = (p: Petal) => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+
+      // Realistic Sakura Petal Path (with slight curve and notch)
+      ctx.beginPath();
+      ctx.moveTo(0, -p.size);
+      ctx.bezierCurveTo(p.size * 0.8, -p.size * 0.6, p.size * 0.7, p.size * 0.7, 0, p.size);
+      ctx.bezierCurveTo(-p.size * 0.7, p.size * 0.7, -p.size * 0.8, -p.size * 0.6, 0, -p.size);
+      ctx.closePath();
+
+      // Soft watercolor gradient fill
+      const grad = ctx.createRadialGradient(0, -p.size * 0.3, 0, 0, 0, p.size);
+      grad.addColorStop(0, `rgba(255, 220, 225, ${p.opacity * 0.95})`);
+      grad.addColorStop(0.6, `rgba(244, 114, 182, ${p.opacity * 0.75})`);
+      grad.addColorStop(1, `rgba(225, 29, 72, ${p.opacity * 0.4})`);
+
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Subtle edge glow
+      ctx.strokeStyle = `rgba(255, 255, 255, ${p.opacity * 0.25})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+
+      ctx.restore();
+    };
+
+    const render = () => {
+      if (window.scrollY > window.innerHeight * 1.1) {
+        animFrameRef.current = requestAnimationFrame(render);
+        return;
+      }
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Mouse influence on horizontal wind drift
+      const mouseWind = mousePos.x * 0.7;
+
+      for (let i = 0; i < petals.length; i++) {
+        const p = petals[i];
+
+        p.swingAngle += p.swingSpeed;
+        p.x += p.speedX + Math.sin(p.swingAngle) * p.swing + mouseWind;
+        p.y += p.speedY;
+        p.rotation += p.rotSpeed;
+
+        // Wrap around borders
+        if (p.y > height + 20) {
+          p.y = -20;
+          p.x = Math.random() * width;
+        }
+        if (p.x > width + 20) {
+          p.x = -20;
+        } else if (p.x < -20) {
+          p.x = width + 20;
+        }
+
+        drawPetal(p);
+      }
+
+      animFrameRef.current = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [mousePos.x]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -47,271 +180,270 @@ export default function HeroSection({ startAnim = true }: HeroSectionProps) {
     }
   };
 
+  const activePhrase = phrases[activePhraseIdx];
+
   return (
     <section 
-      id="hero" 
-      className="relative min-h-screen bg-[#050505] text-white flex flex-col justify-between pt-28 md:pt-36 pb-12 px-6 sm:px-10 lg:px-16 overflow-hidden selection:bg-red-600/30"
+      id="home"
+      className="relative min-h-screen w-full bg-[#08080c] text-white flex flex-col justify-between overflow-hidden select-none"
     >
-      {/* ── Ambient Background Lighting ── */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-red-600/[0.08] rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute top-10 -left-20 w-[450px] h-[450px] bg-rose-600/[0.04] rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-20 -right-20 w-[450px] h-[450px] bg-red-700/[0.05] rounded-full blur-[140px] pointer-events-none" />
+      {/* ── ATMOSPHERIC MISTY LANDSCAPE BACKGROUND ── */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <img 
+          src={heroBg} 
+          alt="Misty Japanese Landscape" 
+          className="w-full h-full object-cover object-center filter brightness-[0.40] contrast-[1.12] transition-transform duration-700 ease-out"
+          style={{
+            transform: `translate3d(${mousePos.x * -12}px, ${mousePos.y * -8}px, 0) scale(1.05)`
+          }}
+        />
 
-      {/* Modern High-Tech Grid Mesh */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.4]"
-        style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)',
-          backgroundSize: '36px 36px',
-          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 80%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 80%)'
-        }}
+        {/* Ambient Dark Atmospheric Vignette & Fog Layers */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#08080c] via-[#08080c]/50 to-[#08080c]/80" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#08080c]/70 via-transparent to-[#08080c]/70" />
+        
+        {/* Soft Sakura & Peach Dawn Glow */}
+        <div 
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] bg-rose-500/10 rounded-full blur-[140px]"
+          style={{
+            transform: `translate(calc(-50% + ${mousePos.x * 25}px), calc(-50% + ${mousePos.y * 20}px))`
+          }}
+        />
+        <div className="absolute bottom-1/3 left-1/4 w-[400px] h-[350px] bg-red-600/10 rounded-full blur-[120px]" />
+      </div>
+
+      {/* ── INTERACTIVE SAKURA PETALS CANVAS ── */}
+      <canvas 
+        ref={canvasRef} 
+        className="absolute inset-0 z-10 pointer-events-none" 
       />
 
-      {/* Background Watermark */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none text-white/[0.012] font-black text-[22vw] whitespace-nowrap tracking-tighter uppercase font-mono z-0">
-        ENGINEER
+      {/* ── TOP HUD BAR (Coordinates & Live Status) ── */}
+      <div className="relative z-20 w-full pt-28 px-6 sm:px-12 flex justify-between items-center text-[10px] font-mono tracking-[0.25em] text-white/50">
+        <div className="flex items-center gap-3">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_12px_#34d399]" />
+          <span className="text-white/90 font-medium">STATUS // AVAILABLE FOR WEB & MOBILE PROJECTS</span>
+        </div>
+        
+        <div className="flex items-center gap-6">
+          <span className="hidden sm:inline text-white/40">NEW DELHI, INDIA • 28.61° N</span>
+          <span className="hidden sm:inline text-white/20">|</span>
+          <span className="px-2 py-0.5 rounded border border-rose-500/30 bg-rose-950/20 text-rose-300/90 text-[9px] font-bold">
+            季語 • CRAFT
+          </span>
+        </div>
       </div>
 
-      {/* ── Main Content Container ── */}
-      <div className="max-w-7xl mx-auto w-full relative z-10 my-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
-          {/* Left Hero Column: Pitch, Headline, Actions */}
-          <div className="lg:col-span-7 flex flex-col items-start text-left">
+      {/* ── CENTER STAGE: KINETIC KIGO HEADLINE & MONUMENTAL NAME ── */}
+      <div className="relative z-20 container mx-auto px-4 flex-1 flex flex-col items-center justify-center py-6 text-center">
+        
+        {/* Traditional Japanese Artisan Seal Watermark (Kigo Studio touch) */}
+        <div className="hidden lg:flex absolute left-8 xl:left-14 top-1/2 -translate-y-1/2 flex-col items-center gap-3 opacity-40 hover:opacity-100 transition-opacity pointer-events-none">
+          <div className="w-[1px] h-14 bg-gradient-to-b from-transparent via-rose-500/50 to-rose-500" />
+          <span className="text-[12px] font-mono tracking-[0.4em] [writing-mode:vertical-rl] text-rose-300 uppercase">
+            職人開発 • ARCHITECT
+          </span>
+          <div className="w-6 h-6 rounded border border-rose-500/50 flex items-center justify-center text-[10px] text-rose-400 font-bold bg-rose-950/40 shadow-sm">
+            印
+          </div>
+          <div className="w-[1px] h-14 bg-gradient-to-t from-transparent via-rose-500/50 to-rose-500" />
+        </div>
+
+        {/* Right HUD Coordinate Column */}
+        <div className="hidden lg:flex absolute right-8 xl:right-14 top-1/2 -translate-y-1/2 flex-col items-center gap-3 opacity-40 pointer-events-none text-[9px] font-mono text-white/40 tracking-[0.3em] [writing-mode:vertical-rl]">
+          <span>REACT × FLUTTER × NODE.JS</span>
+          <span className="text-rose-500">✦</span>
+          <span>FULL-STACK CRAFTSMANSHIP</span>
+        </div>
+
+        {/* Top Kicker Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md mb-4 shadow-lg">
+          <Sparkles className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+          <span className="text-[11px] font-mono tracking-[0.25em] text-white/80 uppercase">
+            Full-Stack Web & Cross-Platform Mobile Engineer
+          </span>
+        </div>
+
+        {/* ── KIGO STUDIO KINETIC ANIMATED HEADLINE ── */}
+        <div className="h-14 sm:h-16 md:h-20 flex items-center justify-center overflow-hidden mb-2">
+          <div 
+            key={activePhraseIdx} 
+            className="animate-in fade-in slide-in-from-bottom-3 duration-500 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight"
+          >
+            <span className="text-white/70 font-light">{activePhrase.prefix}</span>
+            <span className={`bg-gradient-to-r ${activePhrase.color} bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(244,63,94,0.35)]`}>
+              {activePhrase.highlight}
+            </span>
+          </div>
+        </div>
+
+        {/* ── MONUMENTAL BRAND NAME ── */}
+        <div className="relative my-1 select-none">
+          <h1 className="font-anton uppercase tracking-tight leading-[0.85] text-[15vw] sm:text-[13vw] md:text-[8.5rem] lg:text-[10.5rem] flex flex-col items-center">
+            {/* JITENDRA - Solid Luminous White */}
+            <span 
+              className="bg-gradient-to-b from-white via-neutral-100 to-neutral-400 bg-clip-text text-transparent drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)]"
+              style={{
+                transform: `perspective(1000px) rotateX(${mousePos.y * -2.5}deg) rotateY(${mousePos.x * 3.5}deg)`
+              }}
+            >
+              JITENDRA
+            </span>
             
-            {/* Status Live Indicator Badge */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md mb-8 hover:border-red-600/40 transition-colors">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-              </span>
-              <span className="text-xs font-mono uppercase tracking-wider text-neutral-300">
-                Available for New Projects & Roles
-              </span>
-              <span className="hidden sm:inline text-neutral-600 font-mono">|</span>
-              <span className="hidden sm:inline text-xs font-mono text-red-500 uppercase tracking-widest font-semibold">
-                Full-Stack
+            {/* YADAV - Hollow Glowing Sakura Rose Outline */}
+            <span 
+              className="text-transparent"
+              style={{
+                WebkitTextStroke: '2px rgba(244, 63, 94, 0.9)',
+                textShadow: '0 0 45px rgba(244, 63, 94, 0.4), 0 0 90px rgba(244, 63, 94, 0.15)',
+                transform: `perspective(1000px) rotateX(${mousePos.y * -2.5}deg) rotateY(${mousePos.x * 3.5}deg)`
+              }}
+            >
+              YADAV
+            </span>
+          </h1>
+        </div>
+
+        {/* Description / Mission */}
+        <p className="max-w-2xl text-sm sm:text-base md:text-lg text-white/70 font-light mt-3 mb-8 leading-relaxed tracking-wide px-4">
+          Architecting high-concurrency web applications, cross-platform mobile apps, and scalable backends. Built with precision, performance, and aesthetic artistry.
+        </p>
+
+        {/* ── 3D INTERACTIVE CARDS: WEB & MOBILE (Kigo Poster Inspired) ── */}
+        <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-left">
+          
+          {/* Card 1: Web Ecosystem */}
+          <div 
+            onClick={() => scrollToSection('work')}
+            className="group relative p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-rose-500/40 backdrop-blur-xl transition-all duration-300 cursor-pointer shadow-xl overflow-hidden"
+            style={{
+              transform: `perspective(800px) rotateY(${mousePos.x * 4}deg) rotateX(${-mousePos.y * 3}deg)`
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
+                  <Globe className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-xs font-bold text-white tracking-wide">Web Applications</span>
+              </div>
+              <span className="text-[10px] font-mono text-rose-400/80 group-hover:translate-x-1 transition-transform">
+                Explore ↗
               </span>
             </div>
-
-            {/* Main Headline */}
-            <div className="space-y-2 mb-6">
-              <span className="text-xs font-mono tracking-[0.4em] uppercase text-neutral-500 block">
-                Software Architect & Builder
-              </span>
-              <h1 className="text-4xl sm:text-6xl md:text-7xl xl:text-[5rem] font-black tracking-tight uppercase leading-[0.95] font-sans">
-                BUILDING THE <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-500 to-red-600">
-                  NEXT GENERATION
-                </span> <br />
-                OF DIGITAL REALITIES.
-              </h1>
-            </div>
-
-            {/* Subtitle Description */}
-            <p className="text-neutral-400 text-base sm:text-lg leading-relaxed max-w-2xl font-light mb-10">
-              Hi, I'm <strong className="text-white font-semibold">Jitendra Yadav</strong>. I transform complex engineering challenges into minimalist, ultra-fast web platforms, cross-platform mobile apps, and robust systems.
+            <p className="text-[11px] text-white/50 leading-relaxed mb-3">
+              Production-ready web apps with React, TypeScript, Three.js & responsive fluid design.
             </p>
-
-            {/* Primary Action Buttons */}
-            <div className="flex flex-wrap items-center gap-4 mb-12 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => scrollToSection('work')}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-red-600/30 group"
-              >
-                <span>Explore Creations</span>
-                <ArrowDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => scrollToSection('contact')}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 hover:border-white/20 font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.03]"
-              >
-                <Mail size={16} />
-                <span>Let's Connect</span>
-              </button>
-
-              <a
-                href="https://github.com/jeetucodes"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white border border-white/10 transition-colors"
-                title="GitHub Profile"
-              >
-                <Github size={18} />
-              </a>
+            <div className="flex flex-wrap gap-1.5">
+              {['React', 'TypeScript', 'Three.js', 'Vite'].map((t) => (
+                <span key={t} className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 text-[9px] font-mono text-white/70">
+                  {t}
+                </span>
+              ))}
             </div>
-
-            {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-3 gap-6 sm:gap-10 pt-8 border-t border-white/5 w-full max-w-xl">
-              <div>
-                <div className="text-2xl sm:text-3xl font-black font-mono text-white mb-0.5">10+</div>
-                <div className="text-[11px] font-mono uppercase tracking-wider text-neutral-500">Modern Techs</div>
-              </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-black font-mono text-red-500 mb-0.5">Full-Stack</div>
-                <div className="text-[11px] font-mono uppercase tracking-wider text-neutral-500">Web & Mobile</div>
-              </div>
-              <div>
-                <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 mb-0.5">100%</div>
-                <div className="text-[11px] font-mono uppercase tracking-wider text-neutral-500">Production Code</div>
-              </div>
-            </div>
-
           </div>
 
-          {/* Right Hero Column: Interactive Tech Terminal & System HUD */}
-          <div className="lg:col-span-5 w-full">
-            <div className="relative rounded-3xl bg-[#0c0c0c]/90 border border-white/10 shadow-2xl backdrop-blur-2xl overflow-hidden transition-all duration-500 hover:border-red-600/40 hover:shadow-red-950/20 group">
-              
-              {/* Terminal Window Header Bar */}
-              <div className="flex items-center justify-between px-5 py-4 bg-white/[0.02] border-b border-white/5">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+          {/* Card 2: Mobile Ecosystem */}
+          <div 
+            onClick={() => scrollToSection('work')}
+            className="group relative p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-emerald-500/40 backdrop-blur-xl transition-all duration-300 cursor-pointer shadow-xl overflow-hidden"
+            style={{
+              transform: `perspective(800px) rotateY(${mousePos.x * 4}deg) rotateX(${-mousePos.y * 3}deg)`
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                  <Smartphone className="w-3.5 h-3.5" />
                 </div>
-                
-                {/* Code Tabs */}
-                <div className="flex items-center bg-black/40 p-1 rounded-lg border border-white/5">
-                  <button
-                    type="button"
-                    onClick={() => setActiveCodeTab('profile')}
-                    className={`px-3 py-1 rounded text-[11px] font-mono transition-colors ${
-                      activeCodeTab === 'profile' ? 'bg-red-600 text-white font-bold' : 'text-neutral-500 hover:text-white'
-                    }`}
-                  >
-                    profile.ts
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveCodeTab('capabilities')}
-                    className={`px-3 py-1 rounded text-[11px] font-mono transition-colors ${
-                      activeCodeTab === 'capabilities' ? 'bg-red-600 text-white font-bold' : 'text-neutral-500 hover:text-white'
-                    }`}
-                  >
-                    system.sh
-                  </button>
-                </div>
-
-                {/* Quick Copy Button */}
-                <button
-                  type="button"
-                  onClick={handleCopyProfile}
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
-                  title="Copy Profile JSON"
-                >
-                  {copied ? <Check size={15} className="text-emerald-400" /> : <Copy size={15} />}
-                </button>
+                <span className="text-xs font-bold text-white tracking-wide">Mobile Apps</span>
               </div>
-
-              {/* Terminal Body */}
-              <div className="p-6 font-mono text-xs leading-relaxed overflow-x-auto min-h-[340px] flex flex-col justify-between">
-                {activeCodeTab === 'profile' ? (
-                  <div className="space-y-1.5">
-                    <p className="text-neutral-600">// Core developer profile interface</p>
-                    <p>
-                      <span className="text-purple-400">const</span>{' '}
-                      <span className="text-yellow-400">engineer</span>:{' '}
-                      <span className="text-blue-400">Developer</span> = {'{'}
-                    </p>
-                    <p className="pl-4">
-                      <span className="text-red-400">name</span>:{' '}
-                      <span className="text-emerald-300">"Jitendra Yadav"</span>,
-                    </p>
-                    <p className="pl-4">
-                      <span className="text-red-400">role</span>:{' '}
-                      <span className="text-emerald-300">"Full-Stack & Mobile Developer"</span>,
-                    </p>
-                    <p className="pl-4">
-                      <span className="text-red-400">stack</span>: [
-                      <span className="text-cyan-300">"React"</span>,{' '}
-                      <span className="text-cyan-300">"Expo"</span>,{' '}
-                      <span className="text-cyan-300">"Flutter"</span>,{' '}
-                      <span className="text-cyan-300">"Node.js"</span>,{' '}
-                      <span className="text-cyan-300">"Python"</span>],
-                    </p>
-                    <p className="pl-4">
-                      <span className="text-red-400">cloud</span>: [
-                      <span className="text-amber-300">"Firebase"</span>,{' '}
-                      <span className="text-amber-300">"Supabase"</span>],
-                    </p>
-                    <p className="pl-4">
-                      <span className="text-red-400">focus</span>:{' '}
-                      <span className="text-emerald-300">"Clean Code & Visceral UX"</span>,
-                    </p>
-                    <p className="pl-4">
-                      <span className="text-red-400">availableForHire</span>:{' '}
-                      <span className="text-emerald-400 font-bold">true</span>
-                    </p>
-                    <p>{'};'}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-neutral-600"># System Telemetry & Environment</p>
-                    <p className="text-neutral-400">
-                      <span className="text-emerald-400">jitendra@tit:~$</span> ./check-systems.sh
-                    </p>
-                    <p className="text-neutral-300">
-                      [OK] Web Platform Engines: <span className="text-emerald-400">React, TypeScript, Three.js</span>
-                    </p>
-                    <p className="text-neutral-300">
-                      [OK] Mobile Runtimes: <span className="text-emerald-400">Flutter, Expo, Native Build</span>
-                    </p>
-                    <p className="text-neutral-300">
-                      [OK] Server Infrastructure: <span className="text-emerald-400">Node.js, Express, Python</span>
-                    </p>
-                    <p className="text-neutral-300">
-                      [OK] Database Clusters: <span className="text-emerald-400">Firestore, Supabase, Postgres</span>
-                    </p>
-                    <p className="text-neutral-300">
-                      [OK] Latency: <span className="text-yellow-400">18ms (Optimal)</span>
-                    </p>
-                    <p className="text-emerald-400 mt-3 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      Status: Ready for production deployment
-                    </p>
-                  </div>
-                )}
-
-                {/* Terminal Bottom Status Bar */}
-                <div className="pt-4 mt-6 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-500 select-none">
-                  <div className="flex items-center gap-2">
-                    <Terminal size={13} className="text-red-500" />
-                    <span>bash 5.2</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span>UTF-8</span>
-                    <span className="text-emerald-400 font-bold">LIVE</span>
-                  </div>
-                </div>
-
-              </div>
-
+              <span className="text-[10px] font-mono text-emerald-400/80 group-hover:translate-x-1 transition-transform">
+                Explore ↗
+              </span>
+            </div>
+            <p className="text-[11px] text-white/50 leading-relaxed mb-3">
+              Cross-platform iOS & Android mobile apps published on Google Play Store with Flutter & Expo.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {['Flutter', 'Expo', 'Play Store', 'Firebase'].map((t) => (
+                <span key={t} className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 text-[9px] font-mono text-white/70">
+                  {t}
+                </span>
+              ))}
             </div>
           </div>
 
         </div>
+
+        {/* ── DUAL ACTION CTAS & SOCIAL LINKS ── */}
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 z-20">
+          {/* Primary CTA */}
+          <button
+            onClick={() => scrollToSection('work')}
+            className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold text-xs sm:text-sm tracking-wider uppercase overflow-hidden shadow-[0_0_35px_rgba(244,63,94,0.35)] hover:shadow-[0_0_55px_rgba(244,63,94,0.6)] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-3"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              Explore Projects
+              <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+
+          {/* Secondary CTA */}
+          <button
+            onClick={() => scrollToSection('contact')}
+            className="group px-8 py-4 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-white/30 text-white/90 font-medium text-xs sm:text-sm tracking-wider uppercase backdrop-blur-xl transition-all duration-300 flex items-center gap-2.5 active:scale-95"
+          >
+            <span>Let's Talk</span>
+            <ArrowUpRight className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+          </button>
+
+          {/* Social Links */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md">
+            <a 
+              href="https://github.com/jeetucodes" 
+              target="_blank" 
+              rel="noreferrer"
+              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              title="GitHub Profile"
+            >
+              <Github className="w-4 h-4" />
+            </a>
+            <a 
+              href="mailto:jy37934@gmail.com" 
+              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              title="Email Jitendra"
+            >
+              <Mail className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+
       </div>
 
-      {/* ── Bottom Infinite Ticker ── */}
-      <div className="relative z-10 w-full overflow-hidden border-t border-white/5 pt-6 mt-12 select-none pointer-events-none">
-        <div className="flex gap-12 font-mono text-xs uppercase tracking-[0.3em] text-neutral-500/60 whitespace-nowrap animate-marquee">
-          {Array(4).fill(null).flatMap((_, i) => [
-            <span key={`a${i}`}>FULL-STACK DEVELOPMENT</span>,
-            <span key={`b${i}`} className="text-red-500">✦</span>,
-            <span key={`c${i}`}>MOBILE APP ENGINEERING</span>,
-            <span key={`d${i}`} className="text-red-500">✦</span>,
-            <span key={`e${i}`}>CLEAN ARCHITECTURE</span>,
-            <span key={`f${i}`} className="text-red-500">✦</span>,
-            <span key={`g${i}`}>JITENDRA YADAV</span>,
-            <span key={`h${i}`} className="text-red-500">✦</span>,
-          ])}
+      {/* ── CINEMATIC INFINITE TICKER STRIP ── */}
+      <div className="relative z-20 w-full border-t border-white/[0.08] bg-black/60 backdrop-blur-md overflow-hidden py-3">
+        <div className="flex whitespace-nowrap animate-marquee text-[10px] font-mono tracking-[0.35em] text-white/40 select-none">
+          {Array(4).fill(null).map((_, i) => (
+            <span key={i} className="flex items-center gap-8 mx-4">
+              <span>JITENDRA YADAV</span>
+              <span className="text-rose-500">✦</span>
+              <span>FULL-STACK ARCHITECT</span>
+              <span className="text-rose-500">✦</span>
+              <span>WEB & MOBILE SPECIALIST</span>
+              <span className="text-rose-500">✦</span>
+              <span>REACT • FLUTTER • THREE.JS</span>
+              <span className="text-rose-500">✦</span>
+              <span>NODE.JS • PYTHON • FIREBASE</span>
+              <span className="text-rose-500">✦</span>
+              <span>KIGO-INSPIRED CRAFTSMANSHIP</span>
+              <span className="text-rose-500">✦</span>
+            </span>
+          ))}
         </div>
       </div>
+
     </section>
   );
 }
