@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const IMGBB_API_KEY = 'a71661f37315d3c28deeff00ac84db8c';
+const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || 'a71661f37315d3c28deeff00ac84db8c';
 
 interface Project {
   id?: string;
@@ -83,6 +83,20 @@ export default function Admin() {
   });
 
   useEffect(() => {
+    const savedSession = localStorage.getItem('admin_session');
+    if (savedSession) {
+      try {
+        const parsed = JSON.parse(savedSession);
+        setUser(parsed);
+        setAuthLoading(false);
+        fetchProjects();
+        fetchMessages();
+        return;
+      } catch (err) {
+        localStorage.removeItem('admin_session');
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser: any) => {
       setUser(currentUser);
       setAuthLoading(false);
@@ -96,16 +110,45 @@ export default function Admin() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
+    const envAdminId = (import.meta.env.VITE_ADMIN_ID || 'admin').trim().toLowerCase();
+    const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@portfolio.com').trim().toLowerCase();
+    const envAdminPassword = (import.meta.env.VITE_ADMIN_PASSWORD || 'admin12345').trim();
+
+    const inputId = email.trim().toLowerCase();
+    const inputPass = password.trim();
+
+    if ((inputId === envAdminId || inputId === envAdminEmail) && inputPass === envAdminPassword) {
+      const sessionUser = { email: inputId, uid: 'admin-local', displayName: 'Admin' };
+      localStorage.setItem('admin_session', JSON.stringify(sessionUser));
+      setUser(sessionUser);
+      fetchProjects();
+      fetchMessages();
       toast.success("Welcome, Admin");
+      return;
+    }
+
+    try {
+      if (auth) {
+        await signInWithEmailAndPassword(auth, email, password);
+        toast.success("Welcome, Admin");
+        return;
+      }
+      toast.error("Invalid Admin ID or Password");
     } catch (error: any) {
-      toast.error("Authentication Failed");
+      toast.error(error?.message || "Authentication Failed");
     }
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    localStorage.removeItem('admin_session');
+    if (auth) {
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setUser(null);
     toast.success("Logged out successfully");
   };
 
@@ -256,7 +299,7 @@ export default function Admin() {
           </div>
           <h1 className="text-2xl font-bold text-center mb-8">Admin Access</h1>
           <form onSubmit={handleLogin} className="space-y-6">
-            <input type="email" placeholder="Email" className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-3 outline-none focus:border-red-600 transition-all" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input type="text" placeholder="Admin ID or Email" className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-3 outline-none focus:border-red-600 transition-all" value={email} onChange={e => setEmail(e.target.value)} required />
             <input type="password" placeholder="Password" className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-3 outline-none focus:border-red-600 transition-all" value={password} onChange={e => setPassword(e.target.value)} required />
             <button type="submit" className="w-full bg-red-600 hover:bg-red-700 py-4 rounded-xl font-bold transition-all shadow-lg shadow-red-600/10">Sign In</button>
           </form>
