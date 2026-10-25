@@ -28,7 +28,10 @@ import {
   MessageSquare,
   CheckCircle2,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Github,
+  Globe,
+  Smartphone
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -41,6 +44,7 @@ interface Project {
   tagline: string;
   github: string;
   link: string;
+  playstore?: string;
   stack: string[];
   year: string;
   images: string[];
@@ -93,6 +97,7 @@ export default function Admin() {
     tagline: '',
     github: '',
     link: '',
+    playstore: '',
     stack: '',
     year: new Date().getFullYear().toString(),
     images: [] as string[]
@@ -240,8 +245,9 @@ export default function Admin() {
       title: project.title,
       category: project.category,
       tagline: project.tagline,
-      github: project.github === 'N/A' ? '' : project.github,
-      link: project.link === 'N/A' ? '' : project.link,
+      github: project.github === 'N/A' ? '' : (project.github || ''),
+      link: project.link === 'N/A' ? '' : (project.link || ''),
+      playstore: (project as any).playstore === 'N/A' ? '' : ((project as any).playstore || ''),
       stack: project.stack.join(', '),
       year: project.year,
       images: project.images || []
@@ -251,7 +257,7 @@ export default function Admin() {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ title: '', category: '', tagline: '', github: '', link: '', stack: '', year: new Date().getFullYear().toString(), images: [] });
+    setFormData({ title: '', category: '', tagline: '', github: '', link: '', playstore: '', stack: '', year: new Date().getFullYear().toString(), images: [] });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -265,8 +271,9 @@ export default function Admin() {
       const projectData = {
         ...formData,
         stack: formData.stack.split(',').map(s => s.trim()).filter(s => s !== ''),
-        github: formData.github || 'N/A',
-        link: formData.link || 'N/A',
+        github: formData.github.trim() || 'N/A',
+        link: formData.link.trim() || 'N/A',
+        playstore: formData.playstore.trim() || 'N/A',
         updatedAt: new Date(),
       };
       if (editingId) {
@@ -391,7 +398,44 @@ export default function Admin() {
                     <input type="text" placeholder="Year" className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-3 outline-none" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} required />
                   </div>
                   <textarea placeholder="Brief description..." className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-3 h-28 resize-none outline-none" value={formData.tagline} onChange={e => setFormData({...formData, tagline: e.target.value})} required />
-                  <input type="text" placeholder="Stack (comma separated)" className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-3 outline-none" value={formData.stack} onChange={e => setFormData({...formData, stack: e.target.value})} required />
+                  <input type="text" placeholder="Tech Stack (comma separated, e.g. React, Node.js)" className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-3 outline-none focus:border-red-600 transition-all" value={formData.stack} onChange={e => setFormData({...formData, stack: e.target.value})} required />
+                  
+                  {/* Project Links Section */}
+                  <div className="space-y-3 pt-2">
+                    <label className="text-[10px] uppercase tracking-widest text-gray-500 font-mono block">Project Links</label>
+                    <div className="space-y-2.5">
+                      <div className="relative flex items-center">
+                        <Globe size={16} className="absolute left-4 text-gray-500 pointer-events-none" />
+                        <input 
+                          type="url" 
+                          placeholder="Live Website / Web Demo Link" 
+                          className="w-full bg-[#111] border border-white/10 rounded-xl pl-11 pr-4 py-2.5 outline-none focus:border-red-600 transition-all text-xs" 
+                          value={formData.link} 
+                          onChange={e => setFormData({...formData, link: e.target.value})} 
+                        />
+                      </div>
+                      <div className="relative flex items-center">
+                        <Smartphone size={16} className="absolute left-4 text-gray-500 pointer-events-none" />
+                        <input 
+                          type="url" 
+                          placeholder="Google Play Store Link" 
+                          className="w-full bg-[#111] border border-white/10 rounded-xl pl-11 pr-4 py-2.5 outline-none focus:border-red-600 transition-all text-xs" 
+                          value={formData.playstore} 
+                          onChange={e => setFormData({...formData, playstore: e.target.value})} 
+                        />
+                      </div>
+                      <div className="relative flex items-center">
+                        <Github size={16} className="absolute left-4 text-gray-500 pointer-events-none" />
+                        <input 
+                          type="url" 
+                          placeholder="GitHub Repository Link" 
+                          className="w-full bg-[#111] border border-white/10 rounded-xl pl-11 pr-4 py-2.5 outline-none focus:border-red-600 transition-all text-xs" 
+                          value={formData.github} 
+                          onChange={e => setFormData({...formData, github: e.target.value})} 
+                        />
+                      </div>
+                    </div>
+                  </div>
                   
                   <div className="space-y-3">
                     <label className="text-[10px] uppercase tracking-widest text-gray-500 font-mono">Media Assets</label>
@@ -442,6 +486,23 @@ export default function Admin() {
                         <span className="text-[10px] text-gray-500 font-mono">{p.year}</span>
                       </div>
                       <p className="text-gray-500 text-xs line-clamp-1">{p.category}</p>
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-white/5">
+                        {p.link && p.link !== 'N/A' && (
+                          <a href={p.link} target="_blank" rel="noreferrer" title="Website Link" className="text-gray-400 hover:text-white p-1 rounded transition-colors">
+                            <Globe size={14} />
+                          </a>
+                        )}
+                        {p.playstore && p.playstore !== 'N/A' && (
+                          <a href={p.playstore} target="_blank" rel="noreferrer" title="Play Store Link" className="text-emerald-400 hover:text-emerald-300 p-1 rounded transition-colors">
+                            <Smartphone size={14} />
+                          </a>
+                        )}
+                        {p.github && p.github !== 'N/A' && (
+                          <a href={p.github} target="_blank" rel="noreferrer" title="GitHub Repo" className="text-gray-400 hover:text-white p-1 rounded transition-colors">
+                            <Github size={14} />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

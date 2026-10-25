@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Github, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Github, ArrowUpRight, ChevronLeft, ChevronRight, Smartphone } from 'lucide-react';
 import { db, collection, getDocs, query, orderBy } from '@/lib/firebase';
 
 interface Project {
@@ -10,6 +10,7 @@ interface Project {
   tagline: string;
   github: string;
   link: string;
+  playstore?: string;
   stack: string[];
   year: string;
 }
@@ -435,6 +436,31 @@ export default function WorkSection() {
           transform: rotate(12deg) translateY(-8px);
           background: rgba(230,51,51,0.05);
         }
+
+        .wk-btn-playstore {
+          display: flex;
+          align-items: center;
+          gap: 0.8rem;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.15);
+          color: #fff;
+          padding: 1.2rem 2.2rem;
+          border-radius: 100px;
+          font-family: 'DM Mono', monospace;
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+          text-decoration: none;
+          font-weight: 500;
+        }
+
+        .wk-btn-playstore:hover {
+          background: #00875a;
+          border-color: #00875a;
+          color: #fff;
+          transform: translateY(-8px) scale(1.05);
+          box-shadow: 0 20px 40px rgba(0, 135, 90, 0.3);
+        }
       `}</style>
 
       <div className="wk-container">
@@ -475,17 +501,23 @@ export default function WorkSection() {
                     </div>
 
                     <div className="wk-actions">
-                      {p.link && p.link !== 'N/A' ? (
+                      {p.link && p.link !== 'N/A' && (
                         <a href={p.link} target="_blank" rel="noreferrer" className="wk-btn-primary font-bold">
                           Live Demo <ArrowUpRight size={18} />
                         </a>
-                      ) : (
-                        <span className="wk-info-tag font-mono" style={{ opacity: 0.3 }}>Link N/A</span>
+                      )}
+                      {p.playstore && p.playstore !== 'N/A' && (
+                        <a href={p.playstore} target="_blank" rel="noreferrer" className="wk-btn-playstore font-bold" title="Google Play Store">
+                          <Smartphone size={18} /> Play Store
+                        </a>
                       )}
                       {p.github && p.github !== 'N/A' && (
-                        <a href={p.github} target="_blank" rel="noreferrer" className="wk-btn-github">
+                        <a href={p.github} target="_blank" rel="noreferrer" className="wk-btn-github" title="Source Code">
                           <Github size={24} />
                         </a>
+                      )}
+                      {(!p.link || p.link === 'N/A') && (!p.playstore || p.playstore === 'N/A') && (!p.github || p.github === 'N/A') && (
+                        <span className="wk-info-tag font-mono" style={{ opacity: 0.3 }}>Link N/A</span>
                       )}
                     </div>
                   </div>
