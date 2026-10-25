@@ -22,26 +22,40 @@ export default function HeroSection({ startAnim = false }: HeroSectionProps) {
   const waveCanvasRef = useRef<HTMLCanvasElement>(null);
   const waveTimeRef = useRef(0);
 
-  // Film grain
+  // Film grain - optimized static pattern (0% CPU impact)
   useEffect(() => {
     const canvas = grainRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
-    let id: number;
-    const draw = () => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const tile = document.createElement('canvas');
+    tile.width = 128;
+    tile.height = 128;
+    const tCtx = tile.getContext('2d');
+    if (!tCtx) return;
+
+    const img = tCtx.createImageData(128, 128);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = Math.random() * 18;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 14;
+    }
+    tCtx.putImageData(img, 0, 0);
+
+    const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      const img = ctx.createImageData(canvas.width, canvas.height);
-      for (let i = 0; i < img.data.length; i += 4) {
-        const v = Math.random() * 18;
-        img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
-        img.data[i + 3] = 14;
+      const pattern = ctx.createPattern(tile, 'repeat');
+      if (pattern) {
+        ctx.fillStyle = pattern;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-      ctx.putImageData(img, 0, 0);
-      id = requestAnimationFrame(draw);
     };
-    draw();
-    return () => cancelAnimationFrame(id);
+
+    resize();
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
   }, []);
 
   // Main loop
@@ -61,11 +75,16 @@ export default function HeroSection({ startAnim = false }: HeroSectionProps) {
       }
     };
     window.addEventListener('resize', updateRect);
-    window.addEventListener('scroll', updateRect);
     // Initial call
     setTimeout(updateRect, 100);
 
     const loop = () => {
+      // Pause updates when scrolled past Hero section to save 100% CPU/GPU
+      if (window.scrollY > window.innerHeight * 1.2) {
+        animId.current = requestAnimationFrame(loop);
+        return;
+      }
+
       curX += (targetX - curX) * 0.2;
       curY += (targetY - curY) * 0.2;
       ringX += (targetX - ringX) * 0.08;
@@ -150,7 +169,11 @@ export default function HeroSection({ startAnim = false }: HeroSectionProps) {
     loop();
 
     const onMove = (e: MouseEvent) => { targetX = e.clientX; targetY = e.clientY; };
-    const onEnter = () => { isHov = true; setIsHovered(true); };
+    const onEnter = () => { 
+      updateRect();
+      isHov = true; 
+      setIsHovered(true); 
+    };
     const onLeave = () => { isHov = false; setIsHovered(false); };
     const onWinLeave = () => {
       if (tiltWrapRef.current)

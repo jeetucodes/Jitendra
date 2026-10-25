@@ -27,20 +27,19 @@ const TextScrollSection: React.FC = () => {
         }
       });
 
-      // Split Text Reveal
+      // Split Text Reveal - GPU accelerated (no blur scrub jank)
       const words = gsap.utils.toArray('.ts-word');
       gsap.fromTo(words, 
-        { opacity: 0.1, y: 20, filter: 'blur(10px)' },
+        { opacity: 0.15, y: 30 },
         { 
           opacity: 1, 
           y: 0, 
-          filter: 'blur(0px)',
-          stagger: 0.2,
+          stagger: 0.15,
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: 'top 40%',
-            end: 'bottom 60%',
-            scrub: true,
+            start: 'top 45%',
+            end: 'bottom 65%',
+            scrub: 1,
           }
         }
       );
@@ -59,31 +58,30 @@ const TextScrollSection: React.FC = () => {
         <div className="ts-bg-left whitespace-nowrap text-[25vw] font-black leading-none tracking-tighter">
           INTELLIGENCE INTELLIGENCE INTELLIGENCE
         </div>
-        <div className="ts-bg-right whitespace-nowrap text-[25vw] font-black leading-none tracking-tighter text-red-600">
-          FUTURE FUTURE FUTURE FUTURE FUTURE
+        <div className="ts-bg-right whitespace-nowrap text-[25vw] font-black leading-none tracking-tighter self-end">
+          ARCHITECTURE ARCHITECTURE ARCHITECTURE
         </div>
       </div>
 
-      <div className="relative z-10 text-center px-6">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-4xl md:text-7xl font-bold tracking-tight text-white uppercase leading-none">
-            {["Scaling", "Intelligence", "//", "Crafting", "the", "Future"].map((word, i) => (
-              <span key={i} className="ts-word inline-block">
-                {word === "//" ? <span className="text-red-600">{word}</span> : word}
-              </span>
-            ))}
-          </h2>
-          
-          <div className="mt-12 h-[1px] w-24 bg-red-600 mx-auto" />
-          
-          <p className="mt-8 text-lg md:text-xl font-mono text-gray-500 tracking-[0.3em] uppercase">
-            Jitendra Yadav — 2024
-          </p>
-        </div>
+      <div ref={containerRef} className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+        <span className="text-[10px] uppercase font-mono tracking-[0.5em] text-red-600 mb-8 block">
+          Core Philosophy
+        </span>
+        <h2 
+          ref={textRef} 
+          className="text-3xl md:text-5xl lg:text-6xl font-medium tracking-tight leading-tight text-white/90"
+        >
+          {`I transform complex systemic challenges into minimalist, high-performance digital realities—bridging the frontier of artificial intelligence with visceral, human-first interaction design.`.split(' ').map((word, i) => (
+            <span key={i} className="ts-word inline-block mr-[0.25em] will-change-transform">
+              {word}
+            </span>
+          ))}
+        </h2>
       </div>
 
-      {/* Decorative scanline */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(255,255,255,0.02)_50%)] bg-[length:100%_4px] pointer-events-none" />
+      {/* Decorative lines */}
+      <div className="absolute left-10 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-white/5 to-transparent hidden md:block" />
+      <div className="absolute right-10 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-white/5 to-transparent hidden md:block" />
     </section>
   );
 };
