@@ -1,5 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Github, ArrowUpRight, ChevronLeft, ChevronRight, Smartphone } from 'lucide-react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { 
+  Github, 
+  ArrowUpRight, 
+  ChevronLeft, 
+  ChevronRight, 
+  Smartphone, 
+  Globe, 
+  Sparkles,
+  Layers,
+  ExternalLink
+} from 'lucide-react';
 import { db, collection, getDocs, query, orderBy } from '@/lib/firebase';
 
 interface Project {
@@ -13,9 +23,10 @@ interface Project {
   playstore?: string;
   stack: string[];
   year: string;
+  createdAt?: any;
 }
 
-const ProjectGallery = ({ images, title }: { images: string[], title: string }) => {
+const ProjectGallery = ({ images, title, projectLink }: { images: string[], title: string, projectLink?: string }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
 
   const next = (e: React.MouseEvent) => {
@@ -28,41 +39,96 @@ const ProjectGallery = ({ images, title }: { images: string[], title: string }) 
     setCurrentIdx((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  if (!images || images.length === 0) return <div className="wk-img-container bg-neutral-900" />;
+  if (!images || images.length === 0) {
+    return (
+      <div className="w-full aspect-[16/10] rounded-3xl bg-neutral-900 border border-white/5 flex items-center justify-center">
+        <span className="text-white/20 font-mono text-xs uppercase tracking-widest">No preview available</span>
+      </div>
+    );
+  }
+
+  // Extract clean domain for mock bar
+  let displayDomain = 'project-preview.app';
+  if (projectLink && projectLink !== 'N/A') {
+    try {
+      displayDomain = new URL(projectLink).hostname;
+    } catch {
+      displayDomain = projectLink.replace(/https?:\/\//, '').split('/')[0];
+    }
+  }
 
   return (
-    <div className="wk-img-container group/gallery">
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-      {images.map((img, idx) => (
-        <img
-          key={idx}
-          src={img}
-          alt={`${title} - ${idx}`}
-          className={`wk-gallery-img ${idx === currentIdx ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-110 rotate-1'}`}
-        />
-      ))}
+    <div className="relative group/mockup rounded-3xl overflow-hidden border border-white/10 bg-[#0c0c0c] shadow-2xl transition-all duration-700 hover:border-red-600/40 hover:shadow-red-950/20">
+      {/* Mockup Top Window Bar */}
+      <div className="flex items-center justify-between px-5 py-3.5 bg-black/60 backdrop-blur-md border-b border-white/5 select-none z-20 relative">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-red-500/80" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+          <div className="w-3 h-3 rounded-full bg-green-500/80" />
+        </div>
+        <div className="px-4 py-1 rounded-full bg-white/5 border border-white/5 text-[11px] font-mono text-white/50 tracking-wide truncate max-w-[200px] md:max-w-[280px]">
+          {displayDomain}
+        </div>
+        <div className="text-[11px] font-mono text-white/30">
+          {images.length > 1 ? `${currentIdx + 1} / ${images.length}` : 'HD'}
+        </div>
+      </div>
 
-      {images.length > 1 && (
-        <>
-          <div className="absolute inset-0 flex items-center justify-between px-6 opacity-0 group-hover/gallery:opacity-100 transition-all duration-500 z-20">
-            <button onClick={prev} className="p-3 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 hover:bg-red-600 hover:scale-110 transition-all">
-              <ChevronLeft size={24} />
-            </button>
-            <button onClick={next} className="p-3 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 hover:bg-red-600 hover:scale-110 transition-all">
-              <ChevronRight size={24} />
-            </button>
-          </div>
-          <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-20">
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => { e.stopPropagation(); setCurrentIdx(idx); }}
-                className={`h-1.5 transition-all duration-500 rounded-full ${idx === currentIdx ? 'w-10 bg-red-600' : 'w-2 bg-white/20 hover:bg-white/40'}`}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      {/* Main Image Display */}
+      <div className="relative w-full aspect-[16/10] overflow-hidden bg-black/40">
+        {images.map((img, idx) => (
+          <img
+            key={idx}
+            src={img}
+            alt={`${title} screenshot ${idx + 1}`}
+            className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-700 ease-out group-hover/mockup:scale-105 ${
+              idx === currentIdx ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-110 pointer-events-none'
+            }`}
+          />
+        ))}
+
+        {/* Ambient bottom gradient */}
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+        {/* Multi-image Navigation Controls */}
+        {images.length > 1 && (
+          <>
+            <div className="absolute inset-0 flex items-center justify-between px-4 z-20 opacity-0 group-hover/mockup:opacity-100 transition-opacity duration-300">
+              <button 
+                type="button"
+                onClick={prev} 
+                className="p-3 bg-black/70 backdrop-blur-md text-white rounded-full border border-white/10 hover:bg-red-600 hover:border-red-600 hover:scale-110 transition-all shadow-xl"
+                aria-label="Previous screenshot"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                type="button"
+                onClick={next} 
+                className="p-3 bg-black/70 backdrop-blur-md text-white rounded-full border border-white/10 hover:bg-red-600 hover:border-red-600 hover:scale-110 transition-all shadow-xl"
+                aria-label="Next screenshot"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+
+            {/* Bottom dot indicators */}
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+              {images.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setCurrentIdx(idx); }}
+                  className={`h-1.5 rounded-full transition-all duration-400 ${
+                    idx === currentIdx ? 'w-8 bg-red-600 shadow-sm shadow-red-600' : 'w-2 bg-white/20 hover:bg-white/40'
+                  }`}
+                  aria-label={`Go to screenshot ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
@@ -71,34 +137,35 @@ export default function WorkSection() {
   const containerRef = useRef<HTMLElement>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [velocity, setVelocity] = useState(0);
-
-  useEffect(() => {
-    let lastPos = window.scrollY;
-    let request: number;
-    const updateVelocity = () => {
-      const currentPos = window.scrollY;
-      const diff = currentPos - lastPos;
-      setVelocity(diff * 0.15); // Adjust sensitivity
-      lastPos = currentPos;
-      request = requestAnimationFrame(updateVelocity);
-    };
-    request = requestAnimationFrame(updateVelocity);
-    return () => cancelAnimationFrame(request);
-  }, []);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        const fetchedProjects = querySnapshot.docs.map(doc => {
+        let docsData: any[] = [];
+        try {
+          const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
+          const querySnapshot = await getDocs(q);
+          docsData = querySnapshot.docs;
+        } catch {
+          const querySnapshot = await getDocs(collection(db, 'projects'));
+          docsData = querySnapshot.docs;
+        }
+
+        const fetchedProjects = docsData.map(doc => {
           const data = doc.data();
           return {
             id: doc.id,
             ...data,
             images: data.images || (data.image ? [data.image] : [])
           } as Project;
+        });
+
+        // Safe client sort by date descending
+        fetchedProjects.sort((a, b) => {
+          const timeA = new Date(a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt || 0).getTime() || 0;
+          const timeB = new Date(b.createdAt?.toDate ? b.createdAt.toDate() : b.createdAt || 0).getTime() || 0;
+          return timeB - timeA;
         });
 
         setProjects(fetchedProjects);
@@ -112,425 +179,253 @@ export default function WorkSection() {
     fetchProjects();
   }, []);
 
-  useEffect(() => {
-    if (loading || projects.length === 0) return;
-
-    let ctx: any;
-    const initGSAP = async () => {
-      try {
-        const gsapModule = await import('gsap');
-        const gsap: any = gsapModule.default || gsapModule;
-        const ScrollTriggerModule = await import('gsap/ScrollTrigger');
-        const ScrollTrigger: any = ScrollTriggerModule.default || ScrollTriggerModule;
-
-        gsap.registerPlugin(ScrollTrigger);
-
-        ctx = gsap.context(() => {
-          // Floating background text animation
-          gsap.to('.wk-bg-text', {
-            xPercent: -20,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: 1,
-            }
-          });
-
-          const wrappers = gsap.utils.toArray('.wk-project-wrapper');
-          wrappers.forEach((wrapper: any, i: number) => {
-            const card = wrapper.querySelector('.wk-project-card');
-            const info = wrapper.querySelector('.wk-info');
-            const img = wrapper.querySelector('.wk-img-container');
-            const bgText = wrapper.querySelector('.wk-item-bg-text');
-
-            // Cinematic Reveal & Parallax
-            const tl = gsap.timeline({
-              scrollTrigger: {
-                trigger: wrapper,
-                start: 'top 90%',
-                end: 'top 10%',
-                scrub: 0.5,
-              }
-            });
-
-            tl.fromTo(img, 
-              { clipPath: 'inset(15% 15% 15% 15% round 5rem)', scale: 1.2, filter: 'brightness(0.3) blur(10px)' },
-              { clipPath: 'inset(0% 0% 0% 0% round 3rem)', scale: 1, filter: 'brightness(1) blur(0px)', duration: 1.5 }
-            )
-            .from(info, { x: 100, opacity: 0, filter: 'blur(10px)' }, '-=1')
-            .from(bgText, { y: 200, opacity: 0, scale: 0.5 }, '-=1.2');
-
-            // Sticky Stacking Logic
-            if (i < wrappers.length - 1) {
-              gsap.to(card, {
-                scale: 0.85,
-                yPercent: -15,
-                opacity: 0.3,
-                filter: 'blur(15px) grayscale(1)',
-                scrollTrigger: {
-                  trigger: wrappers[i + 1],
-                  start: 'top 90%',
-                  end: 'top 20%',
-                  scrub: true,
-                }
-              });
-            }
-          });
-        }, containerRef);
-      } catch (err) {
-        console.error("GSAP load error:", err);
+  // Compute available categories dynamically
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    projects.forEach(p => {
+      if (p.category && p.category.trim()) {
+        set.add(p.category.trim());
       }
-    };
+    });
+    return ['All', ...Array.from(set)];
+  }, [projects]);
 
-    initGSAP();
-
-    return () => {
-      if (ctx) ctx.revert();
-    };
-  }, [loading, projects]);
-
-  if (loading) {
-    return (
-      <section id="work" className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-          <div className="text-red-600 font-mono tracking-[0.3em] uppercase text-xs">Loading Works</div>
-        </div>
-      </section>
-    );
-  }
+  // Filter projects based on selected category
+  const filteredProjects = useMemo(() => {
+    if (selectedCategory === 'All') return projects;
+    return projects.filter(p => p.category?.trim().toLowerCase() === selectedCategory.toLowerCase());
+  }, [projects, selectedCategory]);
 
   return (
-    <section id="work" ref={containerRef} style={{ background: '#050505', position: 'relative', overflow: 'hidden' }}>
-      <div className="wk-bg-text">WORKS WORKS WORKS WORKS WORKS</div>
+    <section 
+      id="work" 
+      ref={containerRef} 
+      className="relative bg-[#050505] text-white py-32 px-6 md:px-12 lg:px-20 overflow-hidden font-sans selection:bg-red-600/30"
+    >
+      {/* Ambient background glows */}
+      <div className="absolute top-1/4 -left-40 w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-40 w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[140px] pointer-events-none" />
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@300;400;700;800;900&display=swap');
+      {/* Background typographic watermark */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 whitespace-nowrap font-black text-[18vw] leading-none text-white/[0.015] select-none pointer-events-none tracking-tighter uppercase font-mono">
+        SHOWCASE
+      </div>
 
-        .wk-bg-text {
-          position: absolute;
-          top: 10%;
-          left: 0;
-          white-space: nowrap;
-          font-family: 'Anton', sans-serif;
-          font-size: 35vw;
-          color: rgba(255,255,255,0.015);
-          pointer-events: none;
-          line-height: 0.8;
-          z-index: 0;
-          text-transform: uppercase;
-          letter-spacing: -0.05em;
-        }
-
-        .wk-item-bg-text {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-family: 'Anton', sans-serif;
-          font-size: 20vw;
-          color: rgba(230, 51, 51, 0.04);
-          white-space: nowrap;
-          pointer-events: none;
-          z-index: -1;
-          text-transform: uppercase;
-        }
-
-        .wk-container {
-          max-width: 1400px;
-          margin: 0 auto;
-          padding: 0 5vw;
-          position: relative;
-          z-index: 1;
-        }
-
-        .wk-header {
-          padding: 150px 0 100px;
-          text-align: center;
-        }
-
-        .wk-label {
-          font-family: 'DM Mono', monospace;
-          font-size: 0.75rem;
-          letter-spacing: 0.5em;
-          color: #e63333;
-          margin-bottom: 2rem;
-          display: block;
-          text-transform: uppercase;
-        }
-
-        .wk-title-wrap {
-          overflow: hidden;
-          line-height: 0.9;
-        }
-
-        .wk-title-word {
-          font-family: 'Anton', sans-serif;
-          font-size: clamp(4rem, 15vw, 12rem);
-          text-transform: uppercase;
-          color: #fff;
-        }
-
-        .wk-projects-grid {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .wk-project-wrapper {
-          position: sticky;
-          top: 0;
-          width: 100%;
-          height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .wk-project-card {
-          display: grid;
-          grid-template-columns: 1.3fr 1fr;
-          gap: 5vw;
-          align-items: center;
-          width: 100%;
-          background: rgba(10,10,10,0.8);
-          backdrop-blur: 40px;
-          padding: 4vw;
-          border-radius: 4rem;
-          border: 1px solid rgba(255,255,255,0.06);
-          box-shadow: 0 50px 100px rgba(0,0,0,0.5);
-        }
-
-        @media (max-width: 1024px) {
-          .wk-project-card {
-            grid-template-columns: 1fr;
-            gap: 2.5rem;
-            padding: 2.5rem;
-            border-radius: 2.5rem;
-            height: auto;
-            max-height: 85vh;
-            overflow-y: auto;
-          }
-          .wk-project-wrapper {
-            height: auto;
-            margin-bottom: 10vh;
-          }
-        }
-
-        .wk-img-container {
-          position: relative;
-          width: 100%;
-          aspect-ratio: 16 / 11;
-          border-radius: 3rem;
-          overflow: hidden;
-          background: #111;
-          box-shadow: 0 30px 60px rgba(0,0,0,0.4);
-        }
-
-        .wk-gallery-img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: all 1.2s cubic-bezier(0.2, 1, 0.3, 1);
-        }
-
-        .wk-info {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .wk-info-tag {
-          font-family: 'DM Mono', monospace;
-          color: #e63333;
-          font-size: 0.8rem;
-          margin-bottom: 1.5rem;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-        }
-
-        .wk-info-title {
-          font-family: 'Anton', sans-serif;
-          font-size: clamp(3rem, 6vw, 5rem);
-          line-height: 1;
-          color: #fff;
-          margin-bottom: 2rem;
-          text-transform: uppercase;
-        }
-
-        .wk-info-desc {
-          font-family: 'Inter', sans-serif;
-          color: rgba(255,255,255,0.4);
-          font-size: 1.1rem;
-          line-height: 1.6;
-          margin-bottom: 3rem;
-          max-width: 90%;
-        }
-
-        .wk-stack {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.8rem;
-          margin-bottom: 3.5rem;
-        }
-
-        .wk-chip {
-          font-family: 'DM Mono', monospace;
-          font-size: 0.65rem;
-          padding: 0.5rem 1.2rem;
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 100px;
-          color: rgba(255,255,255,0.5);
-          text-transform: uppercase;
-        }
-
-        .wk-actions {
-          display: flex;
-          gap: 1.5rem;
-          align-items: center;
-        }
-
-        .wk-btn-primary {
-          display: flex;
-          align-items: center;
-          gap: 0.8rem;
-          background: #e63333;
-          color: #fff;
-          padding: 1.2rem 2.5rem;
-          border-radius: 100px;
-          font-family: 'DM Mono', monospace;
-          font-size: 0.85rem;
-          text-transform: uppercase;
-          transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
-          text-decoration: none;
-          font-weight: 500;
-        }
-
-        .wk-btn-primary:hover {
-          background: #fff;
-          color: #000;
-          transform: translateY(-8px) scale(1.05);
-          box-shadow: 0 20px 40px rgba(230,51,51,0.3);
-        }
-
-        .wk-btn-github {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 55px;
-          height: 55px;
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 50%;
-          color: #fff;
-          transition: all 0.4s ease;
-          text-decoration: none;
-        }
-
-        .wk-btn-github:hover {
-          border-color: #e63333;
-          color: #e63333;
-          transform: rotate(12deg) translateY(-8px);
-          background: rgba(230,51,51,0.05);
-        }
-
-        .wk-btn-playstore {
-          display: flex;
-          align-items: center;
-          gap: 0.8rem;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.15);
-          color: #fff;
-          padding: 1.2rem 2.2rem;
-          border-radius: 100px;
-          font-family: 'DM Mono', monospace;
-          font-size: 0.85rem;
-          text-transform: uppercase;
-          transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
-          text-decoration: none;
-          font-weight: 500;
-        }
-
-        .wk-btn-playstore:hover {
-          background: #00875a;
-          border-color: #00875a;
-          color: #fff;
-          transform: translateY(-8px) scale(1.05);
-          box-shadow: 0 20px 40px rgba(0, 135, 90, 0.3);
-        }
-      `}</style>
-
-      <div className="wk-container">
-        <div className="wk-header">
-          <span className="wk-label">Creative Archive</span>
-          <div className="wk-title-wrap">
-            <h2 className="wk-title-word">SELECTED</h2>
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 border border-red-600/20 text-red-500 font-mono text-xs uppercase tracking-widest mb-6">
+            <Sparkles size={14} />
+            <span>Selected Projects & Engineering</span>
           </div>
-          <div className="wk-title-wrap">
-            <h2 className="wk-title-word" style={{ color: '#e63333' }}>SHOWCASE</h2>
-          </div>
-        </div>
 
-        <div className="wk-projects-grid">
-          {projects.length > 0 ? (
-            projects.map((p, i) => (
-              <div key={p.id} className="wk-project-wrapper">
-                <div 
-                  className="wk-item-bg-text scroll-skew"
-                  style={{ transform: `translate(-50%, -50%) skewY(${velocity}deg)` }}
-                >
-                  {p.title.split('\n')[0]}
-                </div>
-                <div className="wk-project-card">
-                  <ProjectGallery images={p.images} title={p.title} />
+          <h2 className="text-5xl md:text-7xl font-black tracking-tight uppercase leading-tight mb-6 font-mono">
+            FEATURED <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600">CREATIONS</span>
+          </h2>
 
-                  <div className="wk-info">
-                    <span className="wk-info-tag font-mono">{p.category} // {p.year}</span>
-                    <h3 className="wk-info-title font-bold text-5xl md:text-7xl tracking-wider uppercase">
-                      {p.title}
-                    </h3>
-                    <p className="wk-info-desc text-lg opacity-60 leading-relaxed font-medium">
-                      {p.tagline}
-                    </p>
+          <p className="text-neutral-400 text-base md:text-lg leading-relaxed font-sans font-light">
+            A curated collection of web platforms, cross-platform mobile apps, and full-stack software built with performance, architecture, and user experience in mind.
+          </p>
 
-                    <div className="wk-stack">
-                      {p.stack.map(s => <span key={s} className="wk-chip font-mono">{s}</span>)}
-                    </div>
-
-                    <div className="wk-actions">
-                      {p.link && p.link !== 'N/A' && (
-                        <a href={p.link} target="_blank" rel="noreferrer" className="wk-btn-primary font-bold">
-                          Live Demo <ArrowUpRight size={18} />
-                        </a>
-                      )}
-                      {p.playstore && p.playstore !== 'N/A' && (
-                        <a href={p.playstore} target="_blank" rel="noreferrer" className="wk-btn-playstore font-bold" title="Google Play Store">
-                          <Smartphone size={18} /> Play Store
-                        </a>
-                      )}
-                      {p.github && p.github !== 'N/A' && (
-                        <a href={p.github} target="_blank" rel="noreferrer" className="wk-btn-github" title="Source Code">
-                          <Github size={24} />
-                        </a>
-                      )}
-                      {(!p.link || p.link === 'N/A') && (!p.playstore || p.playstore === 'N/A') && (!p.github || p.github === 'N/A') && (
-                        <span className="wk-info-tag font-mono" style={{ opacity: 0.3 }}>Link N/A</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="py-20 text-center">
-              <p className="text-white/30 font-mono tracking-widest uppercase">No projects found in database</p>
-              <a href="/admin" className="text-red-500 mt-4 inline-block hover:underline">Go to Admin to add projects</a>
+          {/* Interactive Category Filter Pills */}
+          {categories.length > 2 && (
+            <div className="flex flex-wrap items-center justify-center gap-2.5 mt-10">
+              {categories.map((cat) => {
+                const count = cat === 'All' ? projects.length : projects.filter(p => p.category?.trim().toLowerCase() === cat.toLowerCase()).length;
+                const isActive = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${
+                      isActive 
+                        ? 'bg-red-600 text-white shadow-lg shadow-red-600/25 scale-105' 
+                        : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 border border-white/5'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-neutral-400'}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
+
+        {/* Projects Showcase Stream */}
+        {loading ? (
+          <div className="py-28 flex flex-col items-center justify-center gap-4">
+            <div className="w-12 h-12 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-mono tracking-widest text-neutral-500 uppercase">Loading Masterpieces...</span>
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="py-24 text-center rounded-[2.5rem] bg-[#0c0c0c] border border-white/5 max-w-2xl mx-auto p-12">
+            <Layers size={40} className="text-neutral-600 mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-2">No Projects In This Category</h3>
+            <p className="text-neutral-500 text-sm mb-6">Switch category or add more projects from the admin dashboard.</p>
+            <button 
+              type="button"
+              onClick={() => setSelectedCategory('All')} 
+              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-mono uppercase rounded-xl transition-all"
+            >
+              Show All Projects
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-24 md:space-y-32">
+            {filteredProjects.map((project, idx) => {
+              const isEven = idx % 2 === 0;
+              const projectNumber = String(idx + 1).padStart(2, '0');
+              const hasPlayStore = project.playstore && project.playstore !== 'N/A';
+              const hasLiveWeb = project.link && project.link !== 'N/A';
+              const hasGithub = project.github && project.github !== 'N/A';
+
+              return (
+                <div 
+                  key={project.id}
+                  className="relative p-6 sm:p-10 md:p-12 lg:p-14 rounded-[2.5rem] bg-gradient-to-b from-[#111111]/90 via-[#0a0a0a]/90 to-[#070707] border border-white/10 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-red-600/30 group"
+                >
+                  {/* Subtle Corner Ambient Glow */}
+                  <div className="absolute top-0 right-0 w-72 h-72 bg-red-600/5 rounded-full blur-[80px] pointer-events-none group-hover:bg-red-600/10 transition-all duration-700" />
+
+                  <div className={`grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center`}>
+                    
+                    {/* Media Gallery Column */}
+                    <div className={`lg:col-span-7 ${isEven ? 'lg:order-1' : 'lg:order-2'}`}>
+                      <ProjectGallery 
+                        images={project.images} 
+                        title={project.title} 
+                        projectLink={hasLiveWeb ? project.link : project.playstore}
+                      />
+                    </div>
+
+                    {/* Details Content Column */}
+                    <div className={`lg:col-span-5 flex flex-col justify-center ${isEven ? 'lg:order-2' : 'lg:order-1'}`}>
+                      
+                      {/* Top Meta Line: Number + Category Badge + Year */}
+                      <div className="flex items-center justify-between gap-4 mb-5">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-red-600/10 text-red-500 border border-red-600/20 tracking-wider uppercase">
+                            {project.category || 'Engineering'}
+                          </span>
+                          {project.year && (
+                            <span className="text-xs font-mono text-neutral-500">
+                              • {project.year}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-3xl font-black font-mono text-white/20 select-none">
+                          #{projectNumber}
+                        </span>
+                      </div>
+
+                      {/* Project Title */}
+                      <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-4 uppercase group-hover:text-red-500 transition-colors duration-300">
+                        {project.title}
+                      </h3>
+
+                      {/* Project Tagline / Description */}
+                      <p className="text-neutral-400 text-sm sm:text-base leading-relaxed mb-6 font-light">
+                        {project.tagline}
+                      </p>
+
+                      {/* Tech Stack Chips */}
+                      {project.stack && project.stack.length > 0 && (
+                        <div className="mb-8">
+                          <div className="text-[10px] uppercase font-mono tracking-widest text-neutral-500 mb-2.5">
+                            Built With
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {project.stack.map((tech, i) => (
+                              <span 
+                                key={i}
+                                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[11px] font-mono text-neutral-300 tracking-wide hover:border-red-600/40 hover:text-white transition-colors"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Interactive Action Buttons */}
+                      <div className="flex flex-wrap items-center gap-3 pt-2">
+                        {/* Live Website Demo */}
+                        {hasLiveWeb && (
+                          <a 
+                            href={project.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-red-600/30 group/btn"
+                          >
+                            <Globe size={15} />
+                            <span>Live Website</span>
+                            <ArrowUpRight size={15} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                          </a>
+                        )}
+
+                        {/* Google Play Store */}
+                        {hasPlayStore && (
+                          <a 
+                            href={project.playstore}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 hover:border-emerald-500 font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.03] shadow-lg hover:shadow-emerald-900/30 group/play"
+                          >
+                            <Smartphone size={15} />
+                            <span>Play Store</span>
+                            <ArrowUpRight size={15} className="group-hover/play:translate-x-0.5 group-hover/play:-translate-y-0.5 transition-transform" />
+                          </a>
+                        )}
+
+                        {/* GitHub Source Code */}
+                        {hasGithub && (
+                          <a 
+                            href={project.github}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 hover:border-white/20 font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.03]"
+                            title="View Source Code on GitHub"
+                          >
+                            <Github size={15} />
+                            <span>Code</span>
+                          </a>
+                        )}
+
+                        {/* If no external links provided */}
+                        {!hasLiveWeb && !hasPlayStore && !hasGithub && (
+                          <span className="text-xs font-mono text-neutral-500 uppercase tracking-widest px-4 py-2 rounded-lg bg-white/5 border border-white/5">
+                            Internal Project
+                          </span>
+                        )}
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Bottom CTA to View Admin or Contact */}
+        <div className="mt-24 text-center border-t border-white/5 pt-12">
+          <p className="text-neutral-500 text-sm font-mono tracking-wider mb-4">
+            HAVE A VISION IN MIND? LET'S BUILD SOMETHING EXTRAORDINARY.
+          </p>
+          <a 
+            href="#contact" 
+            className="inline-flex items-center gap-2 text-xs font-mono font-bold text-red-500 hover:text-red-400 uppercase tracking-widest hover:underline transition-all"
+          >
+            <span>Start A Conversation</span>
+            <ArrowUpRight size={14} />
+          </a>
+        </div>
+
       </div>
     </section>
   );
