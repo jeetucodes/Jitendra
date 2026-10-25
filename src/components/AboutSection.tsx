@@ -248,7 +248,6 @@ export default function AboutSection() {
 
   const skills = [
     { title: 'React', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', details: 'Frontend & UI' },
-    { title: 'React Native', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', details: 'Mobile App Dev' },
     { title: 'Expo', logo: 'https://cdn.simpleicons.org/expo/white', details: 'Universal React Apps' },
     { title: 'Flutter', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flutter/flutter-original.svg', details: 'Cross-Platform Apps' },
     { title: 'Python', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg', details: 'Backend & AI/ML' },

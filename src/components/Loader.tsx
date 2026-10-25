@@ -34,7 +34,7 @@ const PLATFORMS = [
   },
   {
     id: 'react',
-    name: 'React Native',
+    name: 'React',
     color: '#61DAFB',
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" width="52" height="52">
