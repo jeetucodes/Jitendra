@@ -57,6 +57,22 @@ interface Message {
   status: 'unread' | 'read';
 }
 
+
+const getInitial = (name?: string) => {
+  if (!name || !name.trim()) return '?';
+  return name.trim().charAt(0).toUpperCase();
+};
+
+const formatDate = (timestamp?: any) => {
+  if (!timestamp) return 'Recent';
+  try {
+    const d = typeof timestamp?.toDate === 'function' ? timestamp.toDate() : new Date(timestamp);
+    return isNaN(d.getTime()) ? 'Recent' : d.toLocaleDateString();
+  } catch (e) {
+    return 'Recent';
+  }
+};
+
 export default function Admin() {
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -167,12 +183,24 @@ export default function Admin() {
 
   const fetchMessages = async () => {
     try {
-      const q = query(collection(db, 'messages'), orderBy('timestamp', 'desc'));
-      const querySnapshot = await getDocs(q);
-      const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+      let docs: Message[] = [];
+      try {
+        const q = query(collection(db, 'messages'), orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+        docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+      } catch (err) {
+        const col = collection(db, 'messages');
+        const querySnapshot = await getDocs(col);
+        docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+      }
+      docs.sort((a, b) => {
+        const timeA = new Date(a.timestamp || 0).getTime() || 0;
+        const timeB = new Date(b.timestamp || 0).getTime() || 0;
+        return timeB - timeA;
+      });
       setMessages(docs);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching messages:", error);
     }
   };
 
@@ -317,21 +345,23 @@ export default function Admin() {
             <h1 className="text-xl font-bold tracking-tighter">ADMIN <span className="text-red-600">HUB</span></h1>
             <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
               <button 
-                onClick={() => setActiveTab('projects')}
+                type="button"
+                onClick={() => { setActiveTab('projects'); fetchProjects(); }}
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'projects' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500 hover:text-white'}`}
               >
                 <LayoutDashboard size={16} />
                 Projects
               </button>
               <button 
-                onClick={() => setActiveTab('inbox')}
+                type="button"
+                onClick={() => { setActiveTab('inbox'); fetchMessages(); }}
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-medium transition-all relative ${activeTab === 'inbox' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500 hover:text-white'}`}
               >
                 <Inbox size={16} />
                 Inbox
-                {messages.filter(m => m.status === 'unread').length > 0 && (
+                {messages.filter(m => m?.status === 'unread').length > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-red-600 rounded-full text-[9px] flex items-center justify-center font-bold">
-                    {messages.filter(m => m.status === 'unread').length}
+                    {messages.filter(m => m?.status === 'unread').length}
                   </span>
                 )}
               </button>
@@ -442,24 +472,24 @@ export default function Admin() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${msg.status === 'unread' ? 'bg-red-600 text-white' : 'bg-white/5 text-gray-500'}`}>
-                            {msg.name[0].toUpperCase()}
+                            {getInitial(msg.name)}
                           </div>
                           <div>
-                            <p className="font-bold text-sm">{msg.name}</p>
-                            <a href={`mailto:${msg.email}`} className="text-xs text-red-500 hover:underline">{msg.email}</a>
+                            <p className="font-bold text-sm">{msg.name?.trim() || 'Anonymous'}</p>
+                            <a href={msg.email ? `mailto:${msg.email}` : undefined} className="text-xs text-red-500 hover:underline">{msg.email || 'No email provided'}</a>
                           </div>
                           {msg.status === 'unread' && <span className="bg-red-600 text-white text-[8px] font-bold px-2 py-0.5 rounded-full ml-2">NEW</span>}
                         </div>
-                        <h4 className="text-white font-semibold text-sm mb-2">Sub: {msg.subject}</h4>
+                        <h4 className="text-white font-semibold text-sm mb-2">Sub: {msg.subject?.trim() || '(No Subject)'}</h4>
                         <div className="bg-black/40 p-4 rounded-xl border border-white/5 text-gray-400 text-sm leading-relaxed whitespace-pre-wrap">
-                          {msg.message}
+                          {msg.message?.trim() || '(No message content)'}
                         </div>
                       </div>
                       <div className="flex flex-row md:flex-col justify-between items-center md:items-end gap-4 min-w-[140px]">
                         <div className="text-right">
                           <div className="flex items-center gap-2 text-[10px] text-gray-500 font-mono mb-1 justify-end">
                             <Clock size={12} />
-                            {new Date(msg.timestamp).toLocaleDateString()}
+                            {formatDate(msg.timestamp)}
                           </div>
                         </div>
                         <div className="flex gap-2">
