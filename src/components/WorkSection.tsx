@@ -26,6 +26,18 @@ interface Project {
   createdAt?: any;
 }
 
+
+const getWebsiteName = (url?: string) => {
+  if (!url || url === 'N/A') return 'Website';
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    return hostname || 'Website';
+  } catch {
+    const clean = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+    return clean || 'Website';
+  }
+};
+
 const ProjectGallery = ({ images, title, projectLink }: { images: string[], title: string, projectLink?: string }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
 
@@ -48,14 +60,7 @@ const ProjectGallery = ({ images, title, projectLink }: { images: string[], titl
   }
 
   // Extract clean domain for mock bar
-  let displayDomain = 'project-preview.app';
-  if (projectLink && projectLink !== 'N/A') {
-    try {
-      displayDomain = new URL(projectLink).hostname;
-    } catch {
-      displayDomain = projectLink.replace(/https?:\/\//, '').split('/')[0];
-    }
-  }
+  const displayDomain = getWebsiteName(projectLink);
 
   return (
     <div className="relative group/mockup rounded-3xl overflow-hidden border border-white/10 bg-[#0c0c0c] shadow-2xl transition-all duration-700 hover:border-red-600/40 hover:shadow-red-950/20">
@@ -353,16 +358,17 @@ export default function WorkSection() {
 
                       {/* Interactive Action Buttons */}
                       <div className="flex flex-wrap items-center gap-3 pt-2">
-                        {/* Live Website Demo */}
+                        {/* Website Link */}
                         {hasLiveWeb && (
                           <a 
                             href={project.link}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-red-600/30 group/btn"
+                            title={`Visit ${getWebsiteName(project.link)}`}
                           >
                             <Globe size={15} />
-                            <span>Live Website</span>
+                            <span>{getWebsiteName(project.link)}</span>
                             <ArrowUpRight size={15} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                           </a>
                         )}
