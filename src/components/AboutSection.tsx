@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Code, Cpu, Smartphone, Globe, Wrench, AppWindow } from 'lucide-react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { Code, Cpu, Smartphone, Globe, Wrench, AppWindow, Sparkles } from 'lucide-react';
 
 export default function AboutSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -10,6 +10,7 @@ export default function AboutSection() {
   const sections = ['ab-hero', 'ab-about', 'ab-skills', 'ab-terminal', 'ab-cta'];
   const [activeSection, setActiveSection] = useState('ab-hero');
   const [isInView, setIsInView] = useState(false);
+  const [skillFilter, setSkillFilter] = useState<'All' | 'Frontend' | 'Mobile' | 'Backend' | 'Cloud'>('All');
 
   // Intersection observer to only show fixed elements (cursor, nav, progress) when in this section
   useEffect(() => {
@@ -247,17 +248,92 @@ export default function AboutSection() {
   ];
 
   const skills = [
-    { title: 'React', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', details: 'Frontend & UI' },
-    { title: 'Expo', logo: 'https://cdn.simpleicons.org/expo/white', details: 'Universal React Apps' },
-    { title: 'Flutter', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flutter/flutter-original.svg', details: 'Cross-Platform Apps' },
-    { title: 'Python', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg', details: 'Backend & AI/ML' },
-    { title: 'JavaScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg', details: 'Core Web & ES6+' },
-    { title: 'TypeScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg', details: 'Typed Systems' },
-    { title: 'Three.js', logo: 'https://cdn.simpleicons.org/threedotjs/white', details: '3D Web Experiences' },
-    { title: 'Node.js', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg', details: 'Backend Runtime' },
-    { title: 'Firebase', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg', details: 'Cloud & Auth' },
-    { title: 'Supabase', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/supabase/supabase-original.svg', details: 'Postgres & DB' },
+    { 
+      title: 'React', 
+      category: 'Frontend', 
+      badge: 'UI & Web', 
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', 
+      details: 'Component architecture, Next.js, Hooks & State management',
+      tags: ['Frontend', 'SPA', 'UI/UX']
+    },
+    { 
+      title: 'Expo', 
+      category: 'Mobile', 
+      badge: 'Mobile App', 
+      logo: 'https://cdn.simpleicons.org/expo/white', 
+      details: 'Universal apps, EAS Build, and cross-platform native runtime',
+      tags: ['Cross-Platform', 'EAS', 'React']
+    },
+    { 
+      title: 'Flutter', 
+      category: 'Mobile', 
+      badge: 'Mobile App', 
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flutter/flutter-original.svg', 
+      details: 'High-performance native apps for iOS & Android with Dart',
+      tags: ['Dart', 'Mobile', 'UI Toolkit']
+    },
+    { 
+      title: 'Python', 
+      category: 'Backend', 
+      badge: 'AI & Backend', 
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg', 
+      details: 'AI / ML integration, backend scripting & data automation',
+      tags: ['AI/ML', 'Automation', 'APIs']
+    },
+    { 
+      title: 'JavaScript', 
+      category: 'Frontend', 
+      badge: 'Core Engine', 
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg', 
+      details: 'Modern ES6+, asynchronous programming & Web APIs',
+      tags: ['ES6+', 'Async', 'Web APIs']
+    },
+    { 
+      title: 'TypeScript', 
+      category: 'Frontend', 
+      badge: 'Type Safety', 
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg', 
+      details: 'Strict typing, robust design patterns & scalable codebase',
+      tags: ['Strong Types', 'Interfaces', 'Scalable']
+    },
+    { 
+      title: 'Three.js', 
+      category: 'Frontend', 
+      badge: '3D Graphics', 
+      logo: 'https://cdn.simpleicons.org/threedotjs/white', 
+      details: 'Interactive 3D web graphics, WebGL canvases & shaders',
+      tags: ['3D Web', 'WebGL', 'Animations']
+    },
+    { 
+      title: 'Node.js', 
+      category: 'Backend', 
+      badge: 'Server Runtime', 
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg', 
+      details: 'High-throughput APIs, microservices & backend servers',
+      tags: ['REST APIs', 'Express', 'Backend']
+    },
+    { 
+      title: 'Firebase', 
+      category: 'Cloud', 
+      badge: 'Cloud Platform', 
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg', 
+      details: 'Authentication, Cloud Firestore, Cloud Functions & Storage',
+      tags: ['Auth', 'Firestore', 'Serverless']
+    },
+    { 
+      title: 'Supabase', 
+      category: 'Cloud', 
+      badge: 'BaaS & Postgres', 
+      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/supabase/supabase-original.svg', 
+      details: 'PostgreSQL database, Row-Level Security & Realtime subscriptions',
+      tags: ['PostgreSQL', 'RLS', 'Realtime']
+    },
   ];
+
+  const filteredSkills = useMemo(() => {
+    if (skillFilter === 'All') return skills;
+    return skills.filter(s => s.category === skillFilter);
+  }, [skillFilter]);
 
   return (
     <div id="ab-container" ref={containerRef}>
@@ -464,78 +540,130 @@ export default function AboutSection() {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 1.5rem;
-          margin-top: 4rem;
+          margin-top: 2rem;
           width: 90%;
-          max-width: 1400px;
-          transform-style: preserve-3d;
-          perspective: 2000px;
+          max-width: 1350px;
+        }
+
+        @media (max-width: 1200px) {
+          #ab-container .ab-skills-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+
+        @media (max-width: 850px) {
+          #ab-container .ab-skills-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 550px) {
+          #ab-container .ab-skills-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         #ab-container .ab-skill-cell {
-          aspect-ratio: 1;
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          background: rgba(14, 14, 14, 0.75);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 24px;
+          padding: 1.75rem;
           display: flex;
           flex-direction: column;
-          align-items: center;
-          justify-content: center;
+          justify-content: space-between;
           position: relative;
           overflow: hidden;
-          transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+          transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+          min-height: 220px;
           cursor: none;
         }
 
         #ab-container .ab-skill-cell:hover {
-          background: rgba(230, 51, 51, 0.05);
-          border-color: rgba(230, 51, 51, 0.3);
-          transform: translateY(-20px) scale(1.05);
+          background: rgba(20, 20, 20, 0.95);
+          border-color: rgba(230, 51, 51, 0.45);
+          transform: translateY(-8px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(230, 51, 51, 0.12);
+        }
+
+        #ab-container .ab-skill-cell::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 140px;
+          height: 140px;
+          background: radial-gradient(circle, rgba(230, 51, 51, 0.15) 0%, transparent 70%);
+          border-radius: 50%;
+          opacity: 0;
+          transition: opacity 0.4s ease;
+          pointer-events: none;
+        }
+
+        #ab-container .ab-skill-cell:hover::before {
+          opacity: 1;
+        }
+
+        #ab-container .ab-skill-cell::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(280px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(230, 51, 51, 0.08), transparent 80%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          pointer-events: none;
+        }
+
+        #ab-container .ab-skill-cell:hover::after {
+          opacity: 1;
+        }
+
+        #ab-container .ab-skill-logo-wrap {
+          width: 52px;
+          height: 52px;
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px;
+          transition: all 0.4s ease;
+        }
+
+        #ab-container .ab-skill-cell:hover .ab-skill-logo-wrap {
+          transform: scale(1.1);
+          border-color: rgba(230, 51, 51, 0.4);
+          background: rgba(230, 51, 51, 0.08);
         }
 
         #ab-container .ab-skill-logo {
-          width: 45%;
-          height: 45%;
+          width: 100%;
+          height: 100%;
           object-fit: contain;
-          transition: all 0.6s ease;
-        }
-
-        #ab-container .ab-skill-cell:hover .ab-skill-logo {
-          transform: scale(1.2) rotate(10deg);
-          filter: drop-shadow(0 0 20px rgba(230, 51, 51, 0.4));
-        }
-
-        #ab-container .ab-skill-info-overlay {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 1.5rem;
-          background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-          transform: translateY(100%);
           transition: transform 0.4s ease;
-          text-align: center;
-        }
-
-        #ab-container .ab-skill-cell:hover .ab-skill-info-overlay {
-          transform: translateY(0);
         }
 
         #ab-container .ab-skill-title {
-          font-family: 'Outfit', sans-serif;
-          font-size: 1.2rem;
+          font-family: 'DM Mono', monospace;
+          font-size: 1.25rem;
           font-weight: 700;
           color: #fff;
           margin: 0;
-          text-transform: uppercase;
-          letter-spacing: 2px;
+          letter-spacing: -0.02em;
+          transition: color 0.3s ease;
+        }
+
+        #ab-container .ab-skill-cell:hover .ab-skill-title {
+          color: #e63333;
         }
 
         #ab-container .ab-skill-details {
-          font-family: 'DM Mono', monospace;
-          font-size: 0.7rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.8rem;
           color: rgba(255, 255, 255, 0.5);
-          margin-top: 5px;
+          margin-top: 6px;
+          line-height: 1.5;
         }
 
         /* Perspective Grid Background */
@@ -798,18 +926,69 @@ export default function AboutSection() {
       {/* 3. Skills Grid */}
       <section id="ab-skills" className="ab-skills-section">
         <div className="ab-grid-bg" />
-        <h2 className="ab-arsenal-heading ab-fade-up font-bold text-5xl md:text-7xl tracking-widest leading-tight mb-4 text-center">
-          TECHNICAL <span className="ab-text-red">ARSENAL</span>
-        </h2>
-        <p className="ab-fade-up text-lg opacity-40 font-mono tracking-widest" style={{ textAlign: 'center', marginBottom: '2rem' }}>Technologies & Tools I work with</p>
-        
-        <div className="ab-skills-grid">
-          {skills.map((skill, i) => (
-            <div key={i} className="ab-skill-cell">
-              <img src={skill.logo} alt={skill.title} className="ab-skill-logo" />
-              <div className="ab-skill-info-overlay">
+
+        {/* Section Header */}
+        <div className="max-w-3xl mx-auto text-center mb-6 z-10 relative">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 border border-red-600/20 text-red-500 font-mono text-xs uppercase tracking-widest mb-4">
+            <Sparkles size={14} />
+            <span>Core Competencies & Stack</span>
+          </div>
+          <h2 className="ab-arsenal-heading ab-fade-up font-bold tracking-widest leading-tight text-center">
+            TECHNICAL <span className="ab-text-red">ARSENAL</span>
+          </h2>
+          <p className="ab-fade-up text-sm md:text-base text-white/50 font-sans tracking-wide max-w-xl mx-auto mt-2">
+            A battle-tested stack of modern frameworks, cloud architectures, and languages I use to craft high-impact digital experiences.
+          </p>
+        </div>
+
+        {/* Category Filter Pills */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-8 z-10 relative">
+          {(['All', 'Frontend', 'Mobile', 'Backend', 'Cloud'] as const).map(tab => {
+            const count = tab === 'All' ? skills.length : skills.filter(s => s.category === tab).length;
+            const isActive = skillFilter === tab;
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setSkillFilter(tab)}
+                className={`px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${
+                  isActive
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/30 scale-105'
+                    : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 border border-white/5'
+                }`}
+              >
+                <span>{tab === 'All' ? 'All Tech' : tab}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-neutral-400'}`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Enhanced Skills Bento Grid */}
+        <div className="ab-skills-grid z-10 relative">
+          {filteredSkills.map((skill, i) => (
+            <div key={i} className="ab-skill-cell group">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="ab-skill-logo-wrap">
+                    <img src={skill.logo} alt={skill.title} className="ab-skill-logo" />
+                  </div>
+                  <span className="text-[10px] font-mono uppercase px-2.5 py-1 rounded-full bg-red-600/10 text-red-500 border border-red-600/20 font-bold tracking-wider">
+                    {skill.badge}
+                  </span>
+                </div>
                 <h3 className="ab-skill-title">{skill.title}</h3>
                 <p className="ab-skill-details">{skill.details}</p>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 mt-5 pt-4 border-t border-white/5">
+                {skill.tags.map((tag, tIdx) => (
+                  <span key={tIdx} className="text-[9px] font-mono px-2 py-0.5 rounded-md bg-white/[0.03] text-neutral-400 border border-white/5">
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
           ))}
