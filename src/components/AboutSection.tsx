@@ -247,14 +247,17 @@ export default function AboutSection() {
   ];
 
   const skills = [
-    { title: 'React', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', details: 'Web & Next.js' },
-    { title: 'Kotlin', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg', details: 'Android Dev' },
-    { title: 'Swift', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg', details: 'iOS Dev' },
-    { title: 'Python', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg', details: 'AI & ML' },
-    { title: 'TypeScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg', details: 'Modern JS' },
-    { title: 'Figma', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg', details: 'UI/UX Design' },
-    { title: 'Firebase', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg', details: 'Cloud Services' },
-    { title: 'Git', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg', details: 'Version Control' },
+    { title: 'React', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', details: 'Frontend & UI' },
+    { title: 'React Native', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', details: 'Mobile App Dev' },
+    { title: 'Expo', logo: 'https://cdn.simpleicons.org/expo/white', details: 'Universal React Apps' },
+    { title: 'Flutter', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flutter/flutter-original.svg', details: 'Cross-Platform Apps' },
+    { title: 'Python', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg', details: 'Backend & AI/ML' },
+    { title: 'JavaScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg', details: 'Core Web & ES6+' },
+    { title: 'TypeScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg', details: 'Typed Systems' },
+    { title: 'Three.js', logo: 'https://cdn.simpleicons.org/threedotjs/white', details: '3D Web Experiences' },
+    { title: 'Node.js', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg', details: 'Backend Runtime' },
+    { title: 'Firebase', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg', details: 'Cloud & Auth' },
+    { title: 'Supabase', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/supabase/supabase-original.svg', details: 'Postgres & DB' },
   ];
 
   return (
