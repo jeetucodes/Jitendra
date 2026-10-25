@@ -111,8 +111,8 @@ export default function Admin() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const envAdminId = (import.meta.env.VITE_ADMIN_ID || 'admin').trim().toLowerCase();
-    const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@portfolio.com').trim().toLowerCase();
-    const envAdminPassword = (import.meta.env.VITE_ADMIN_PASSWORD || 'admin12345').trim();
+    const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'jy37934@gmail.com').trim().toLowerCase();
+    const envAdminPassword = (import.meta.env.VITE_ADMIN_PASSWORD || 'jitu@admin7061').trim();
 
     const inputId = email.trim().toLowerCase();
     const inputPass = password.trim();
